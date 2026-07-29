@@ -1,0 +1,53 @@
+# Environment and secrets
+.env
+.env.*
+!.env.example
+server/.env
+
+# Java
+services/api/.gradle/
+services/api/build/
+
+# Node / React Native
+node_modules/
+apps/mobile/node_modules/
+node_modules.backup*/
+.pnpm-store/
+.expo/
+**/.expo/
+.corepack/
+.codex_doc_work/
+build/
+**/build/
+apps/mobile/android/.gradle/
+**/.gradle/
+apps/mobile/android/app/build/
+**/app/build/
+apps/mobile/ios/Pods/
+apps/mobile/ios/build/
+.gradle-user/
+.gradle-user-build/
+work/
+recovery-witjoy-registration/
+*.bak
+
+# IDE and OS
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+.DS_Store
+Thumbs.db
+
+# Signing and generated artifacts
+*.keystore
+*.jks
+*.p12
+*.mobileprovision
+*.ipa
+*.apk
+*.aab
+
+# Local planning source material; versioned project documents live in docs/.
+作品策划书粗版.docx
