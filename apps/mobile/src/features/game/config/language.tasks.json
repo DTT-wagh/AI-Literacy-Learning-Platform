@@ -1,0 +1,170 @@
+[
+  {
+    "id": "language.labels.v1",
+    "title": "邮局标签实验室",
+    "description": "给词语贴上人物、地点、动作或情绪标签，观察样本怎样帮助AI找规律。",
+    "module": "language",
+    "difficulty": "easy",
+    "version": 1,
+    "levelId": "L1",
+    "ageBand": "6–8岁",
+    "durationMinutes": 4,
+    "objectives": ["认识标签和分类", "说明一张卡片的分类依据"],
+    "aiMode": "local_rule",
+    "safety": {"inputPolicy": "只使用审核后的词语卡", "publishLevel": "local"},
+    "steps": [
+      {"id": "briefing", "type": "intro", "title": "标签机坏了", "content": "句子城邮局的四个词语邮筒混在一起了。你来帮AI认识标签。", "previewOptions": ["人物", "地点", "动作", "情绪"]},
+      {"id": "classify", "type": "category", "title": "分拣词语卡", "content": "先看词语在句子里表示谁、在哪里、做什么，还是感觉怎样。请选择最适合的标签。", "options": [{"id": "person", "label": "人物：老师、医生"}, {"id": "place", "label": "地点：学校、公园"}, {"id": "action", "label": "动作：跑、观察"}, {"id": "emotion", "label": "情绪：开心、紧张"}]},
+      {"id": "ai-check", "type": "aiResult", "title": "AI试着分类", "content": "AI根据你提供的标签给出一个候选分类。", "aiInput": "观察", "aiResult": {"result": "动作", "confidence": "medium", "evidence": ["它表示正在做什么"], "notice": "标签来自人提供的例子，样本太少时可能会分错。"}},
+      {"id": "review", "type": "review", "title": "标签复盘", "content": "完成一句：AI需要人先贴标签，因为……"},
+      {"id": "reward", "type": "reward", "title": "标签整理员", "content": "你用分类依据帮助AI找规律。", "reward": {"title": "标签整理员芯片", "message": "你知道标签和例子会影响AI的分类。", "badge": "标签整理员 L1"}}
+    ]
+  },
+  {
+    "id": "language.labels.samples.v1",
+    "title": "教AI看样本",
+    "description": "选择更均衡的训练样本，发现AI几乎没见过某一类时会发生什么。",
+    "module": "language",
+    "difficulty": "medium",
+    "version": 1,
+    "levelId": "L1",
+    "ageBand": "9–10岁",
+    "durationMinutes": 5,
+    "objectives": ["比较训练样本", "发现样本缺失会导致错分"],
+    "aiMode": "local_rule",
+    "safety": {"inputPolicy": "只使用审核后的词语卡", "publishLevel": "local"},
+    "steps": [
+      {"id": "briefing", "type": "intro", "title": "给标签机补样本", "content": "AI要处理6张新卡，但它几乎没见过情绪词。先找一组更均衡的样本。"},
+      {"id": "samples", "type": "evidence", "title": "选择训练样本", "content": "从人物、地点、动作、情绪中各选一条样本。点击或拖动都可以。", "evidenceLimit": 4, "evidence": [{"id": "person-sample", "label": "人物样本", "content": "队员", "type": "sample"}, {"id": "place-sample", "label": "地点样本", "content": "实验室", "type": "sample"}, {"id": "action-sample", "label": "动作样本", "content": "讨论", "type": "sample"}, {"id": "emotion-sample", "label": "情绪样本", "content": "紧张", "type": "sample"}]},
+      {"id": "ai-check", "type": "aiResult", "title": "查看错分", "content": "AI会把一张边界卡作为候选结果，请检查它使用的样本。", "aiResult": {"result": "“紧张”更像动作", "confidence": "low", "evidence": ["情绪样本太少"], "notice": "补充情绪样本后，分类候选会更可靠。"}},
+      {"id": "correction", "type": "aiCorrection", "title": "纠正样本不足", "content": "你会怎样帮助AI发现缺少的类别？", "options": [{"id": "add-emotion", "label": "补充两张情绪样本", "feedback": "你发现了样本不均衡的问题。"}, {"id": "remove-all", "label": "删除所有样本", "feedback": "没有样本时，AI更难找规律。"}]},
+      {"id": "reward", "type": "reward", "title": "样本观察员", "content": "你发现了训练样本会影响分类结果。", "reward": {"title": "样本观察员芯片", "message": "给AI更均衡的例子，能减少漏看类别的情况。", "badge": "样本观察员 L1"}}
+    ]
+  },
+  {
+    "id": "language.context.clues.v1",
+    "title": "前后文线索调查",
+    "description": "先读前后文，再判断“我知道了”是在认真回应还是被催促后的快速回答。",
+    "module": "language",
+    "difficulty": "medium",
+    "version": 1,
+    "levelId": "L2",
+    "ageBand": "9–10岁",
+    "durationMinutes": 5,
+    "objectives": ["利用前后文判断话语意图", "指出改变判断的关键线索"],
+    "aiMode": "reviewed_candidate",
+    "safety": {"inputPolicy": "使用审核后的校园对话", "publishLevel": "local"},
+    "steps": [
+      {"id": "briefing", "type": "intro", "title": "打开句子城来信", "content": "“我知道了”有时是认真听完提醒，有时是被多次催促后的快速回答。"},
+      {"id": "evidence", "type": "evidence", "title": "寻找前后文", "content": "选择能说明事件和说话方式的线索。", "evidenceLimit": 2, "evidence": [{"id": "reminder", "label": "前一句话", "content": "小雨认真听完安全提醒后点头。", "type": "context"}, {"id": "repeat", "label": "另一种前文", "content": "小雨被连续催了三次，快速回答。", "type": "context"}]},
+      {"id": "choice", "type": "choice", "title": "做出判断", "content": "在当前线索下，“我知道了”更像哪一种？", "options": [{"id": "serious", "label": "认真回应"}, {"id": "rushed", "label": "被催促后的快速回答"}, {"id": "uncertain", "label": "还不确定"}]},
+      {"id": "reward", "type": "reward", "title": "语境观察员", "content": "你知道前后文会改变同一句话的意思。", "reward": {"title": "语境观察员芯片", "message": "先找发生了什么，再理解一句话，判断会更可靠。", "badge": "语境观察员 L2"}}
+    ]
+  },
+  {
+    "id": "language.story.intent.v1",
+    "title": "失踪的图书馆钥匙",
+    "description": "用提示词积木补全创作意图，再比较审核后的候选故事。",
+    "module": "language",
+    "difficulty": "hard",
+    "version": 1,
+    "levelId": "L3",
+    "ageBand": "11–12岁",
+    "durationMinutes": 7,
+    "objectives": ["补充角色、目标和限制", "比较候选并保留人工责任"],
+    "aiMode": "reviewed_candidate",
+    "safety": {"inputPolicy": "不使用真实姓名和危险情节", "publishLevel": "local"},
+    "steps": [
+      {"id": "briefing", "type": "intro", "title": "故事共创室", "content": "故事机需要更清楚的目标和限制。AI给的是候选草稿，不是你的最终作品。"},
+      {"id": "intent", "type": "multiChoice", "minSelections": 3, "title": "补全创作意图", "content": "至少选择三类提示积木，让故事更接近你的想法。", "options": [{"id": "character", "label": "主角：细心的图书管理员"}, {"id": "goal", "label": "目标：找回钥匙"}, {"id": "place", "label": "地点：下雨后的旧图书馆"}, {"id": "limit", "label": "限制：120字内，不出现危险追逐"}]},
+      {"id": "candidate", "type": "aiResult", "title": "查看审核候选", "content": "从审核后的候选中比较目标、连贯性和语言是否适龄。", "aiResult": {"result": "候选A：线索顺序清楚", "confidence": "medium", "evidence": ["有明确主角和目标", "包含三个线索"], "notice": "候选是草稿，仍需要人检查和修改。"}},
+      {"id": "compare", "type": "draftComparison", "title": "三稿选择会", "content": "选择更符合创作目标的候选，并说出一个依据。", "options": [{"id": "a", "label": "候选A：线索清楚，结尾温暖"}, {"id": "b", "label": "候选B：字数更长，但事件顺序跳跃"}, {"id": "c", "label": "候选C：语句漂亮，但没有完成找钥匙的目标"}]},
+      {"id": "reward", "type": "reward", "title": "提示设计师", "content": "你用清楚的意图和限制帮助AI生成候选。", "reward": {"title": "提示设计师芯片", "message": "AI生成候选，人来比较、修改和负责。", "badge": "提示设计师 L3"}}
+    ]
+  },
+  {
+    "id": "language.factcheck.v1",
+    "title": "向日葵小编辑",
+    "description": "区分事实、观点和不确定信息，用来源卡修正AI写得流畅但没有依据的句子。",
+    "module": "language",
+    "difficulty": "hard",
+    "version": 1,
+    "levelId": "L4",
+    "ageBand": "11–12岁",
+    "durationMinutes": 8,
+    "objectives": ["区分事实、观点和不确定", "使用两条来源证据完成改写"],
+    "aiMode": "local_rule",
+    "safety": {"inputPolicy": "只使用审核知识卡，不开放互联网搜索", "publishLevel": "reviewed"},
+    "steps": [
+      {"id": "briefing", "type": "intro", "title": "小编辑核验台", "content": "文字通顺不代表内容真实。你要给句子贴标签，再用来源卡核验。"},
+      {"id": "labels", "type": "factLabel", "title": "三色编辑笔", "content": "“向日葵一定能长到两米高”更像事实、观点，还是信息不足？", "options": [{"id": "fact", "label": "事实：可以用资料核对"}, {"id": "opinion", "label": "观点：表达评价或建议"}, {"id": "uncertain", "label": "不确定：说得太绝对或条件不清"}]},
+      {"id": "sources", "type": "sourceEvidence", "title": "来源卡调查", "content": "选择两张更可靠的来源卡，比较作者、日期、证据和适用范围。", "evidenceLimit": 2, "sourceCards": [{"id": "book", "label": "植物科普书", "content": "编辑审核的植物科普书，说明不同品种高度有差异。", "source": "科学出版社 / 2025"}, {"id": "record", "label": "观察记录", "content": "连续记录显示，生长需要合适的光照、水分和土壤。", "source": "学校科学活动 / 2026"}, {"id": "screenshot", "label": "无来源截图", "content": "只写“有人说”，没有作者、日期和可复核记录。", "source": "来源不明"}]},
+      {"id": "revision", "type": "factRevision", "title": "修正后发布", "content": "请选择更谨慎的改写，并保留两条证据。", "options": [{"id": "careful", "label": "一些品种在合适条件下可以长得很高，但高度并不固定。"}, {"id": "absolute", "label": "向日葵一定能长到两米高。"}]},
+      {"id": "reward", "type": "reward", "title": "金牌编辑", "content": "你使用来源证据，把绝对说法改成了有范围的表达。", "reward": {"title": "金牌编辑芯片", "message": "AI的句子再流畅，也要经过来源和条件核验。", "badge": "金牌编辑 L4"}}
+    ]
+  },
+  {
+    "id": "language.story.revision.v1",
+    "title": "人类主编室",
+    "description": "比较审核候选，完成至少两类人工修改，并保留AI参与说明。",
+    "module": "language",
+    "difficulty": "hard",
+    "version": 1,
+    "levelId": "L3",
+    "ageBand": "11–12岁",
+    "durationMinutes": 8,
+    "objectives": ["比较目标、连贯性和适龄表达", "完成删除、替换、补写或重排中的两类修改"],
+    "aiMode": "reviewed_candidate",
+    "safety": {"inputPolicy": "只编辑审核候选，不使用真实姓名和危险情节", "publishLevel": "local"},
+    "steps": [
+      {"id": "briefing", "type": "intro", "title": "主编开始工作", "content": "候选故事已经生成。现在由你决定保留什么、修改什么，AI不能替你签发最终作品。"},
+      {"id": "compare", "type": "draftComparison", "title": "比较三稿", "content": "请选择最符合“找回钥匙、温暖结尾、120字内”的候选。", "options": [{"id": "a", "label": "候选A：目标清楚，线索按顺序出现"}, {"id": "b", "label": "候选B：句子很长，但没有说明钥匙为什么失踪"}, {"id": "c", "label": "候选C：有危险追逐，不符合安全限制"}]},
+      {"id": "revision", "type": "multiChoice", "minSelections": 2, "title": "完成两类修改", "content": "选择至少两类编辑操作，再确认AI参与说明。", "options": [{"id": "replace", "label": "把“它”替换成明确的角色名称"}, {"id": "add-cause", "label": "补写角色为什么要去图书馆"}, {"id": "reorder", "label": "把发现线索放在打开门之前"}]},
+      {"id": "publish", "type": "publish", "title": "确认作品说明", "content": "作品保留本地草稿，说明候选由AI提供、最终修改由你完成。", "options": [{"id": "confirmed", "label": "确认人工修改并保留AI参与说明"}, {"id": "skip", "label": "跳过修改直接发布", "feedback": "先完成主动修改，作品才真正体现你的创作意图。"}]},
+      {"id": "reward", "type": "reward", "title": "人类主编", "content": "你保留了修改前后差异，也标注了AI参与。", "reward": {"title": "人类主编芯片", "message": "候选是起点，修改和责任属于人。", "badge": "人类主编 L3"}}
+    ]
+  },
+  {
+    "id": "language.factcheck.sources.v1",
+    "title": "来源卡调查室",
+    "description": "比较作者、日期、证据和适用范围，判断哪两张来源卡更可靠。",
+    "module": "language",
+    "difficulty": "medium",
+    "version": 1,
+    "levelId": "L4",
+    "ageBand": "11–12岁",
+    "durationMinutes": 7,
+    "objectives": ["比较来源可靠性", "识别过时、匿名和绝对化信息"],
+    "aiMode": "local_rule",
+    "safety": {"inputPolicy": "只使用审核知识卡，不开放互联网搜索", "publishLevel": "reviewed"},
+    "steps": [
+      {"id": "briefing", "type": "intro", "title": "来源卡调查室", "content": "四张卡都写得很像真的。编辑要比较来源、日期和证据，不能只看语气。"},
+      {"id": "sources", "type": "sourceEvidence", "title": "选择可靠来源", "content": "选择两张更适合核验“月亮自己发光”的来源卡。", "evidenceLimit": 2, "sourceCards": [{"id": "textbook", "label": "科学教材", "content": "说明月亮反射太阳光，并有编辑和更新时间。", "source": "课程知识卡 / 2026"}, {"id": "observations", "label": "连续观察记录", "content": "记录不同日期看到的月相变化，可以复核。", "source": "天文社活动 / 2026"}, {"id": "anonymous", "label": "匿名转述", "content": "只写“专家说”，没有作者和证据。", "source": "来源不明"}]},
+      {"id": "candidate", "type": "aiResult", "title": "查看核验候选", "content": "AI只能提取可疑点，最终结论要回到来源卡。", "aiResult": {"result": "需要来源核对", "confidence": "medium", "evidence": ["“自己发光”是可以核验的事实陈述"], "notice": "候选不等于事实，来源卡才是本轮核验依据。"}},
+      {"id": "revision", "type": "factRevision", "title": "改成有依据的说法", "content": "选择能同时符合两张来源卡的改写。", "options": [{"id": "reflect", "label": "月亮本身不发光，我们看到的是它反射的太阳光。"}, {"id": "always", "label": "月亮每晚都会自己发光。"}]},
+      {"id": "reward", "type": "reward", "title": "来源调查员", "content": "你没有只听AI解释，而是回到作者、日期和证据。", "reward": {"title": "来源调查员芯片", "message": "可靠来源要能被看见、比较和复核。", "badge": "来源调查员 L4"}}
+    ]
+  },
+  {
+    "id": "language.city-repair.v1",
+    "title": "城市语言修复日",
+    "description": "综合整理、理解、共创和核验能力，修复句子城的信息屏。",
+    "module": "language",
+    "difficulty": "hard",
+    "version": 1,
+    "levelId": "CAPSTONE",
+    "ageBand": "9–12岁",
+    "durationMinutes": 9,
+    "objectives": ["综合使用观察、解释、核验和责任证据"],
+    "aiMode": "reviewed_candidate",
+    "safety": {"inputPolicy": "只使用审核后的校园、家庭和自然主题内容", "publishLevel": "reviewed"},
+    "steps": [
+      {"id": "briefing", "type": "intro", "title": "信息屏需要修复", "content": "图书节前，句子城的信息屏混入了标签错误、语境误解和没有来源的公告。请完成一次编辑流程。"},
+      {"id": "organize", "type": "category", "title": "整理活动词语", "content": "请选择最需要先整理的标签类别。", "options": [{"id": "person", "label": "人物"}, {"id": "place", "label": "地点"}, {"id": "action", "label": "动作"}, {"id": "emotion", "label": "情绪"}]},
+      {"id": "interpret", "type": "evidence", "title": "理解市民留言", "content": "选择前后文、表情或语气中最关键的两条线索。", "evidenceLimit": 2, "evidence": [{"id": "event", "label": "发生的事情", "content": "大家完成了困难的拼图。", "type": "context"}, {"id": "face", "label": "表情", "content": "说话的人笑着点头。", "type": "expression"}, {"id": "voice", "label": "语气", "content": "声音明亮，语调上扬。", "type": "tone"}]},
+      {"id": "candidate", "type": "aiResult", "title": "核对候选", "content": "AI只给候选判断，你要看依据是否来自当前证据。", "aiResult": {"result": "更像称赞", "confidence": "medium", "evidence": ["完成困难任务", "语气积极"], "notice": "候选结果需要人检查，不会自动发布。"}},
+      {"id": "publish", "type": "publish", "title": "负责发布", "content": "确认信息没有个人信息，并选择本地保存或提交教师审核。", "options": [{"id": "local", "label": "保存在本机"}, {"id": "review", "label": "提交教师审核"}]},
+      {"id": "reward", "type": "reward", "title": "负责发布者", "content": "综合挑战记录观察、解释、核验和责任四项过程证据，不形成公开排名。", "reward": {"title": "负责发布者芯片", "message": "你保留人工判断，检查证据，并在发布前保护隐私。", "badge": "负责发布者"}}
+    ]
+  }
+]

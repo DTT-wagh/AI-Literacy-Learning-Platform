@@ -1,0 +1,107 @@
+{
+  "id": "language.context.v1",
+  "title": "语境侦探：你可真行",
+  "description": "先判断，再打开前后文、表情和语气线索；当信息不足时，用“不确定”保护自己的判断。",
+  "module": "language",
+  "difficulty": "medium",
+  "version": 1,
+  "levelId": "L2",
+  "ageBand": "9–10岁",
+  "durationMinutes": 6,
+  "objectives": ["利用文字之外的语境线索理解句意", "指出AI遗漏的线索", "信息不足时表达不确定"],
+  "aiMode": "reviewed_candidate",
+  "safety": {"inputPolicy": "只使用审核后的校园日常情境，不采集个人信息", "publishLevel": "local"},
+  "steps": [
+    {
+      "id": "briefing",
+      "type": "intro",
+      "title": "语言侦探社简报",
+      "content": "文文收到一句“你可真行”，还不知道这是称赞还是不高兴。你要先判断，再找线索。",
+      "previewOptions": ["先判断", "找线索", "检查AI"]
+    },
+    {
+      "id": "initial-guess",
+      "type": "initialChoice",
+      "title": "第一次判断",
+      "content": "只看核心句，不看AI答案。你现在觉得它更像什么？任何选择都可以继续调查。",
+      "options": [
+        {"id": "praise", "label": "称赞"},
+        {"id": "blame", "label": "责备"},
+        {"id": "uncertain", "label": "不确定"}
+      ]
+    },
+    {
+      "id": "previous-context",
+      "type": "evidence",
+      "title": "打开前后文",
+      "content": "先从前后文、表情、语气中选择最重要的线索，放进证据盒。",
+      "evidenceLimit": 3,
+      "evidence": [
+        {"id": "previous", "label": "前一句话", "content": "小雨完成了大家都觉得很难的拼图。", "type": "context"},
+        {"id": "expression", "label": "表情", "content": "同伴笑着竖起了大拇指。", "type": "expression"},
+        {"id": "tone", "label": "语气", "content": "声音明亮，语调上扬，听起来很开心。", "type": "tone", "audioLabel": "开心语气（字幕已提供）"}
+      ]
+    },
+    {
+      "id": "ai-candidate",
+      "type": "aiResult",
+      "title": "AI观察窗",
+      "content": "文文只展示候选判断和可核对依据，不展示模型内部思考过程。",
+      "aiInput": "你可真行",
+      "aiResult": {
+        "result": "更像称赞",
+        "confidence": "medium",
+        "evidence": ["完成困难任务", "笑脸和大拇指", "语气上扬"],
+        "notice": "我看到了你提交的线索。信息越完整，候选判断通常越可靠；这仍然不是唯一答案。"
+      }
+    },
+    {
+      "id": "changed-context",
+      "type": "counterexample",
+      "title": "同一句话，换了语境",
+      "content": "同伴不小心碰洒了颜料，皱着眉、压低声音说：“你可真行。”现在它更像什么意思？",
+      "context": "事件：颜料被碰洒；表情：皱眉；语气：无奈、压低声音",
+      "options": [
+        {"id": "praise", "label": "称赞", "feedback": "你注意到了句子的字面意思。再比较颜料被碰洒、皱眉和无奈语气这些线索。"},
+        {"id": "blame", "label": "责备", "feedback": "你同时利用了事件、表情和语气，发现文字没有改变，意思却可能改变。"},
+        {"id": "uncertain", "label": "不确定", "feedback": "保留不确定很谨慎。你可以继续比较三条线索是否指向同一含义。"}
+      ]
+    },
+    {
+      "id": "ai-correction",
+      "type": "aiCorrection",
+      "title": "举起纠错旗",
+      "content": "文文因为只看到了“真行”这个正向词，仍给出“更像称赞”的低把握候选。为什么它可能漏看了信息？",
+      "aiResult": {"result": "更像称赞", "confidence": "low", "evidence": ["句子中有“真行”这个正向词"], "notice": "这是一个需要核对的低把握候选。"},
+      "options": [
+        {"id": "missing-context", "label": "AI只看了字面词语，忽略了颜料被碰洒、皱眉和无奈语气", "feedback": "你发现AI漏看了语境线索。补上这些证据后，判断更合理了。"},
+        {"id": "more-colors", "label": "AI应该再看看颜料是什么颜色", "feedback": "这个想法利用了颜色线索，再看看语境有没有其他信息。"},
+        {"id": "faster", "label": "AI判断得不够快", "feedback": "速度会影响体验，但这里更需要检查候选结果使用了哪些语境证据。"}
+      ]
+    },
+    {
+      "id": "insufficient-information",
+      "type": "uncertainty",
+      "title": "信息还不够",
+      "content": "第三轮只看到“你可真行”，不知道发生了什么，也没有表情和语气。现在最可靠的做法是什么？",
+      "options": [
+        {"id": "uncertain", "label": "不确定，继续找一条线索", "feedback": "你没有在信息不足时强行猜答案。不确定也是一种可靠判断。"},
+        {"id": "praise", "label": "一定是称赞", "feedback": "只看正向词还不够。试着找前后文、表情或语气。"},
+        {"id": "blame", "label": "一定是责备", "feedback": "只看一句话还不能确定。可以请求更多线索。"}
+      ]
+    },
+    {
+      "id": "review",
+      "type": "review",
+      "title": "侦探复盘",
+      "content": "回看三轮线索和判断，完成一句：只看文字会……；加入语境后……"
+    },
+    {
+      "id": "reward",
+      "type": "reward",
+      "title": "完成奖励",
+      "content": "学习分奖励的是寻找证据、检查AI候选和在信息不足时保持谨慎的学习行为。",
+      "reward": {"title": "语境观察员芯片", "message": "你发现了文字之外的线索，也知道什么时候应该说“不确定”。", "badge": "语境观察员 L2"}
+    }
+  ]
+}
