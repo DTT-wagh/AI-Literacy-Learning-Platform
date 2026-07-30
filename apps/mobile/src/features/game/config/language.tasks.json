@@ -2,22 +2,60 @@
   {
     "id": "language.labels.v1",
     "title": "邮局标签实验室",
-    "description": "给词语贴上人物、地点、动作或情绪标签，观察样本怎样帮助AI找规律。",
+    "description": "在句子城邮局修复标签机器：先学习两个示例，再整理12张词语邮件，最后检查AI的错分。",
     "module": "language",
     "difficulty": "easy",
     "version": 1,
     "levelId": "L1",
     "ageBand": "6–8岁",
-    "durationMinutes": 4,
-    "objectives": ["认识标签和分类", "说明一张卡片的分类依据"],
+    "durationMinutes": 6,
+    "objectives": ["理解AI需要人提供标签和例子", "整理12张词语卡并纠正一次AI错误"],
     "aiMode": "local_rule",
     "safety": {"inputPolicy": "只使用审核后的词语卡", "publishLevel": "local"},
+    "l1Experiment": {
+      "story": {"title": "句子城邮局标签机器坏了", "content": "四类词语邮件混在了一起。你要帮助文文先看懂标签和例子，再把12张邮件送进正确的邮筒。"},
+      "tutorial": [
+        {"word": "老师", "category": "人物", "explanation": "“老师”表示谁，是一个人物。"},
+        {"word": "奔跑", "category": "动作", "explanation": "“奔跑”表示做什么，是一个动作。"}
+      ],
+      "categories": [
+        {"id": "person", "label": "人物", "prompt": "表示谁"},
+        {"id": "place", "label": "地点", "prompt": "表示哪里"},
+        {"id": "action", "label": "动作", "prompt": "表示做什么"},
+        {"id": "emotion", "label": "情绪", "prompt": "表示感觉"}
+      ],
+      "cards": [
+        {"id": "teacher", "text": "老师", "category": "person"},
+        {"id": "xiaoming", "text": "小明", "category": "person"},
+        {"id": "doctor", "text": "医生", "category": "person"},
+        {"id": "school", "text": "学校", "category": "place"},
+        {"id": "park", "text": "公园", "category": "place"},
+        {"id": "library", "text": "图书馆", "category": "place"},
+        {"id": "run", "text": "跑", "category": "action"},
+        {"id": "jump", "text": "跳", "category": "action"},
+        {"id": "read", "text": "阅读", "category": "action"},
+        {"id": "happy", "text": "开心", "category": "emotion"},
+        {"id": "afraid", "text": "害怕", "category": "emotion"},
+        {"id": "sad", "text": "难过", "category": "emotion"}
+      ],
+      "aiMistake": {"wordId": "painter", "word": "画家", "predictedCategory": "action", "confidence": "low", "reason": "AI只看到了“画”这个字，把它当成了做什么。", "correctCategory": "person", "correctExplanationId": "who"},
+      "explanationOptions": [
+        {"id": "who", "label": "表示谁"},
+        {"id": "where", "label": "表示哪里"},
+        {"id": "doing", "label": "表示做什么"},
+        {"id": "feeling", "label": "表示感觉"}
+      ],
+      "reviewSummary": "AI需要人先贴标签，因为AI通过例子学习。"
+    },
     "steps": [
-      {"id": "briefing", "type": "intro", "title": "标签机坏了", "content": "句子城邮局的四个词语邮筒混在一起了。你来帮AI认识标签。", "previewOptions": ["人物", "地点", "动作", "情绪"]},
-      {"id": "classify", "type": "category", "title": "分拣词语卡", "content": "先看词语在句子里表示谁、在哪里、做什么，还是感觉怎样。请选择最适合的标签。", "options": [{"id": "person", "label": "人物：老师、医生"}, {"id": "place", "label": "地点：学校、公园"}, {"id": "action", "label": "动作：跑、观察"}, {"id": "emotion", "label": "情绪：开心、紧张"}]},
-      {"id": "ai-check", "type": "aiResult", "title": "AI试着分类", "content": "AI根据你提供的标签给出一个候选分类。", "aiInput": "观察", "aiResult": {"result": "动作", "confidence": "medium", "evidence": ["它表示正在做什么"], "notice": "标签来自人提供的例子，样本太少时可能会分错。"}},
-      {"id": "review", "type": "review", "title": "标签复盘", "content": "完成一句：AI需要人先贴标签，因为……"},
-      {"id": "reward", "type": "reward", "title": "标签整理员", "content": "你用分类依据帮助AI找规律。", "reward": {"title": "标签整理员芯片", "message": "你知道标签和例子会影响AI的分类。", "badge": "标签整理员 L1"}}
+      {"id": "intro", "type": "intro", "title": "故事简报", "content": "句子城邮局的标签机器坏了，四类词语邮件混在一起。我们先帮AI看懂两个例子。"},
+      {"id": "tutorial", "type": "intro", "title": "热身教学", "content": "文文会用两个例子说明：标签不是天生存在的，需要人先告诉AI。"},
+      {"id": "classify", "type": "category", "title": "词语卡分类", "content": "先选择人物、地点、动作或情绪标签，再多选词语卡并确认归纳。"},
+      {"id": "ai-predict", "type": "aiResult", "title": "AI尝试分类", "content": "AI根据刚才的标签和例子学习规律。它会展示一次错误判断，请先观察再纠正。", "aiResult": {"result": "画家 → 动作", "confidence": "low", "evidence": ["AI看到了“画”这个字"], "notice": "AI可能只注意到词的一部分，标签和例子能帮助它修正。"}},
+      {"id": "correct-ai", "type": "aiCorrection", "title": "举起纠错旗", "content": "请选择“画家”的正确类别，告诉AI新增了什么学习样本。", "options": [{"id": "person", "label": "人物", "feedback": "新增学习样本：画家 → 人物"}, {"id": "action", "label": "动作", "feedback": "再看看它表示谁，还是表示做什么。"}, {"id": "place", "label": "地点", "feedback": "再想想它是不是一个地方。"}, {"id": "emotion", "label": "情绪", "feedback": "再想想它是不是一种感觉。"}]},
+      {"id": "explain", "type": "choice", "title": "说出你的依据", "content": "你选择“画家 → 人物”的依据是什么？用简单语言告诉AI。", "options": [{"id": "who", "label": "表示谁"}, {"id": "where", "label": "表示哪里"}, {"id": "doing", "label": "表示做什么"}, {"id": "feeling", "label": "表示感觉"}]},
+      {"id": "review", "type": "review", "title": "学习复盘", "content": "回看你的标签、AI第一次判断和你纠正的样本。"},
+      {"id": "reward", "type": "reward", "title": "完成奖励", "content": "你完成了一次从例子到规律的AI启蒙实验。", "reward": {"title": "标签整理员芯片", "message": "你发现AI需要人先贴标签，因为AI通过例子学习。", "badge": "标签整理员 L1"}}
     ]
   },
   {

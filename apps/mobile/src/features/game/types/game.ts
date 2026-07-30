@@ -20,6 +20,7 @@ export type GameStepType =
   | 'sourceEvidence'
   | 'factRevision'
   | 'publish'
+  | 'prediction'
   | 'aiResult'
   | 'counterexample'
   | 'aiCorrection'
@@ -32,6 +33,81 @@ export type GameChoiceOption = {
   id: string;
   label: string;
   feedback?: string;
+};
+
+export type GamePredictionRecord = {
+  id: string;
+  label: string;
+  count: number;
+};
+
+export type GamePredictionFeature = {
+  title: string;
+  description: string;
+  unit: string;
+  maxCount: number;
+};
+
+export type GamePredictionExperiment = {
+  records: GamePredictionRecord[];
+  feature: GamePredictionFeature;
+  options: GameChoiceOption[];
+  prediction: {
+    relation: {
+      label: string;
+      score: number;
+      explanation: string;
+    };
+    result: {
+      title: string;
+      optionId: string;
+      label: string;
+      explanation: string;
+    };
+    takeaway: {
+      title: string;
+      text: string;
+    };
+  };
+};
+
+export type GameL1Category = {
+  id: string;
+  label: string;
+  prompt: string;
+};
+
+export type GameL1Word = {
+  id: string;
+  text: string;
+  category: string;
+};
+
+export type GameL1TutorialExample = {
+  word: string;
+  category: string;
+  explanation: string;
+};
+
+export type GameL1Experiment = {
+  story: {
+    title: string;
+    content: string;
+  };
+  tutorial: GameL1TutorialExample[];
+  categories: GameL1Category[];
+  cards: GameL1Word[];
+  aiMistake: {
+    wordId: string;
+    word: string;
+    predictedCategory: string;
+    confidence: GameConfidence;
+    reason: string;
+    correctCategory: string;
+    correctExplanationId: string;
+  };
+  explanationOptions: GameChoiceOption[];
+  reviewSummary: string;
 };
 
 export type GameEvidence = {
@@ -68,6 +144,7 @@ export type GameStep = {
   minSelections?: number;
   audioLabel?: string;
   sourceCards?: GameEvidence[];
+  prediction?: GamePredictionExperiment;
   reward?: {
     title: string;
     message: string;
@@ -110,9 +187,11 @@ export type GameTask = {
     inputPolicy: string;
     publishLevel: 'local' | 'reviewed';
   };
+  l1Experiment?: GameL1Experiment;
+  predictionExperiment?: GamePredictionExperiment;
 };
 
-export type GameState = 'idle' | 'loading' | 'playing' | 'completed';
+export type GameState = 'idle' | 'loading' | 'playing' | 'completed' | GameL1Phase;
 
 export type GameLearningRecord = {
   studentAnswer: string | null;
@@ -121,3 +200,5 @@ export type GameLearningRecord = {
   finalAnswer: string | null;
   selectedOptionIds?: string[];
 };
+
+export type GameL1Phase = 'INTRO' | 'TUTORIAL' | 'CLASSIFY' | 'AI_PREDICT' | 'CORRECT_AI' | 'EXPLAIN' | 'REVIEW' | 'REWARD';

@@ -1,0 +1,175 @@
+[
+  {
+    "id": "language-label-training",
+    "version": 2,
+    "title": "标签训练场",
+    "icon": "🏷",
+    "goal": "训练AI用人给的标签和例子分类。",
+    "durationMinutes": 8,
+    "offline": true,
+    "recommendation": "先从可观察的词语标签开始，建立AI学习样本的概念。",
+    "legacyTaskIds": ["language.labels.v1", "language.labels.samples.v1"],
+    "stages": [
+      {"id": "briefing", "title": "任务简报", "description": "训练句子城邮局的词语分类器。", "mode": "briefing"},
+      {"id": "label-rules", "title": "规则试标", "description": "先选择标签，再多选词语并确认归纳。", "mode": "action"},
+      {"id": "training-samples", "title": "选择训练样本", "description": "每类选择2至4个有代表性的样本。", "mode": "action"},
+      {"id": "classification-test", "title": "AI测试", "description": "观察AI如何处理没见过的新词。", "mode": "ai"},
+      {"id": "misclassification-diagnosis", "title": "诊断错分", "description": "找出AI为什么会分错。", "mode": "compare"},
+      {"id": "repair-training", "title": "修复训练", "description": "补充样本后再次运行。", "mode": "revise"},
+      {"id": "training-report", "title": "训练报告", "description": "回看标签、样本和修复结果。", "mode": "result"}
+    ],
+    "content": {
+      "labels": [
+        {"id": "person", "label": "人物", "prompt": "表示谁"},
+        {"id": "place", "label": "地点", "prompt": "表示哪里"},
+        {"id": "action", "label": "动作", "prompt": "表示做什么"},
+        {"id": "emotion", "label": "情绪", "prompt": "表示感觉"}
+      ],
+      "basicCards": [
+        {"id": "teacher", "text": "老师", "label": "person"},
+        {"id": "doctor", "text": "医生", "label": "person"},
+        {"id": "school", "text": "学校", "label": "place"},
+        {"id": "park", "text": "公园", "label": "place"},
+        {"id": "run", "text": "跑", "label": "action"},
+        {"id": "reading", "text": "阅读", "label": "action"},
+        {"id": "happy", "text": "开心", "label": "emotion"},
+        {"id": "afraid", "text": "害怕", "label": "emotion"}
+      ],
+      "samplePool": [
+        {"id": "person-neighbor", "text": "邻居", "label": "person", "representative": true},
+        {"id": "person-player", "text": "队员", "label": "person", "representative": true},
+        {"id": "person-painter", "text": "画家", "label": "person", "representative": true},
+        {"id": "place-lab", "text": "实验室", "label": "place", "representative": true},
+        {"id": "place-valley", "text": "山谷", "label": "place", "representative": true},
+        {"id": "place-playground", "text": "操场", "label": "place", "representative": true},
+        {"id": "action-discuss", "text": "讨论", "label": "action", "representative": true},
+        {"id": "action-observe", "text": "观察", "label": "action", "representative": true},
+        {"id": "action-draw", "text": "画", "label": "action", "representative": false},
+        {"id": "emotion-proud", "text": "自豪", "label": "emotion", "representative": true},
+        {"id": "emotion-confused", "text": "疑惑", "label": "emotion", "representative": true},
+        {"id": "emotion-expected", "text": "期待", "label": "emotion", "representative": true}
+      ],
+      "testItems": [
+        {"id": "test-neighbor", "text": "邻居", "label": "person"},
+        {"id": "test-lab", "text": "实验室", "label": "place"},
+        {"id": "test-discuss", "text": "讨论", "label": "action"},
+        {"id": "test-proud", "text": "自豪", "label": "emotion"},
+        {"id": "test-painter", "text": "画家", "label": "person"},
+        {"id": "test-valley", "text": "山谷", "label": "place"},
+        {"id": "test-observe", "text": "观察", "label": "action"},
+        {"id": "test-confused", "text": "疑惑", "label": "emotion"}
+      ],
+      "diagnosisOptions": [
+        {"id": "label-error", "label": "标签错误"},
+        {"id": "few-samples", "label": "某类样本过少"},
+        {"id": "not-representative", "label": "样本缺少代表性"},
+        {"id": "multiple-meanings", "label": "词语有多种含义"}
+      ],
+      "repairSampleIds": ["emotion-proud", "emotion-confused", "emotion-expected"],
+      "report": "AI依赖人提供的标签和例子。单看一个词语不够时，可以去语境推理局继续调查。"
+    }
+  },
+  {
+    "id": "language-context-reasoning",
+    "version": 2,
+    "title": "语境推理局",
+    "icon": "🔎",
+    "goal": "用词义、前后文、表情和语气理解语言。",
+    "durationMinutes": 8,
+    "offline": true,
+    "recommendation": "适合已经会分类、想知道同一句话为什么会有不同意思的你。",
+    "legacyTaskIds": ["language.context.v1", "language.context.clues.v1", "language.context.tone.v1", "language.context.uncertainty.v1"],
+    "stages": [
+      {"id": "briefing", "title": "任务简报", "description": "侦探社收到一句含义不清的话。", "mode": "briefing"},
+      {"id": "bare-judgement", "title": "裸句初判", "description": "先只看一句话，保留你现在的判断。", "mode": "action"},
+      {"id": "word-meaning", "title": "词义线索", "description": "看看同一个字在不同句子里怎样变化。", "mode": "action"},
+      {"id": "context-evidence", "title": "情境线索", "description": "打开前后文和事件背景，选最关键的证据。", "mode": "action"},
+      {"id": "tone-comparison", "title": "表情与语气", "description": "比较不同表情和语气下的同一句话。", "mode": "action"},
+      {"id": "ai-comparison", "title": "AI对照", "description": "AI只会根据收到的线索给出候选。", "mode": "ai"},
+      {"id": "unknown-case", "title": "未知案件", "description": "信息不够时，负责任地说不确定。", "mode": "action"},
+      {"id": "context-review", "title": "案件复盘", "description": "带着证据写下本次判断。", "mode": "result"}
+    ],
+    "content": {
+      "primaryUtterance": "你可真行",
+      "bareOptions": [
+        {"id": "praise", "label": "像是在称赞"},
+        {"id": "other", "label": "可能有别的意思"},
+        {"id": "uncertain", "label": "还不确定"}
+      ],
+      "wordPairs": [
+        {"word": "画", "sentence": "他在画画。", "meaning": "表示正在做的动作"},
+        {"word": "画", "sentence": "墙上挂着一幅画。", "meaning": "表示一件作品"}
+      ],
+      "contextLayers": [
+        {"id": "previous", "kind": "previous", "label": "前一句", "content": "小雨完成了很难的拼图。", "key": true},
+        {"id": "next", "kind": "next", "label": "后一句", "content": "大家笑着为她鼓掌。", "key": false},
+        {"id": "event", "kind": "event", "label": "事件背景", "content": "这是一次合作挑战后的庆祝。", "key": true},
+        {"id": "emoji", "kind": "emoji", "label": "表情", "content": "😊 眉眼放松、嘴角上扬。", "key": true},
+        {"id": "tone", "kind": "tone", "label": "语气字幕", "content": "声音上扬、说得轻快。", "key": true}
+      ],
+      "toneVariants": [
+        {"id": "happy-tone", "label": "😊 轻快上扬", "meaning": "更像称赞"},
+        {"id": "flat-tone", "label": "😐 平静", "meaning": "还需要更多信息"}
+      ],
+      "caseLibrary": [
+        {"utterance": "你可真行", "contexts": ["完成困难拼图，语气开心", "没有前后文，语气平静"]},
+        {"utterance": "好吧", "contexts": ["轻松同意去图书馆", "低沉地暂时接受"]},
+        {"utterance": "我没事", "contexts": ["轻微碰到后确实无碍", "心情难过但不想马上说"]},
+        {"utterance": "画得真特别", "contexts": ["真诚欣赏新风格", "犹豫又缺少具体反馈"]},
+        {"utterance": "他在画画 / 墙上挂着一幅画", "contexts": ["动作义", "作品义"]}
+      ],
+      "unknownCase": {
+        "utterance": "画得真特别。",
+        "options": [
+          {"id": "praise", "label": "是在称赞"},
+          {"id": "need-more", "label": "需要更多信息"}
+        ],
+        "correctId": "need-more"
+      },
+      "report": "同一句话会因事件、表情和语气改变含义。AI也只能依据它收到的线索判断。"
+    }
+  },
+  {
+    "id": "language-truth-editor",
+    "version": 2,
+    "title": "真相编辑部",
+    "icon": "🧭",
+    "goal": "用来源和谨慎表达核验AI短文。",
+    "durationMinutes": 10,
+    "offline": true,
+    "recommendation": "学习把流畅的句子变成有来源、可审核的编辑稿。",
+    "legacyTaskIds": ["language.factcheck.v1", "language.factcheck.sources.v1", "language.factcheck.publish.v1"],
+    "stages": [
+      {"id": "briefing", "title": "任务简报", "description": "AI短文要经过编辑核验，才能进入待审核。", "mode": "briefing"},
+      {"id": "claim-splitting", "title": "声明拆分", "description": "把短文标记为事实、观点或不确定。", "mode": "action"},
+      {"id": "source-linking", "title": "来源连线", "description": "把审核来源卡连到需要核验的声明。", "mode": "action"},
+      {"id": "risk-diagnosis", "title": "风险诊断", "description": "标出无来源、过时、绝对化和范围问题。", "mode": "ai"},
+      {"id": "careful-revision", "title": "谨慎改写", "description": "补充条件、删除错误或把绝对词改准确。", "mode": "revise"},
+      {"id": "publication-check", "title": "发布检查", "description": "确认来源、AI参与说明和待审核状态。", "mode": "action"},
+      {"id": "truth-review", "title": "编辑复盘", "description": "查看可审计的核验记录。", "mode": "result"}
+    ],
+    "content": {
+      "topics": ["向日葵", "月亮", "人工智能", "动物睡眠", "天气预测"],
+      "claims": [
+        {"id": "claim-height", "text": "向日葵一定能长到两米高。", "expectedKind": "uncertain"},
+        {"id": "claim-sun", "text": "向日葵在不同生长阶段会有不同的朝向变化。", "expectedKind": "fact"},
+        {"id": "claim-opinion", "text": "向日葵是校园里最有精神的花。", "expectedKind": "opinion"}
+      ],
+      "sources": [
+        {"id": "source-book", "provider": "审核植物科普书", "publishedAt": "2025-09-01", "evidenceType": "植物观察与说明", "scope": "不同品种和生长条件高度有差异", "reviewStatus": "reviewed", "content": "向日葵高度受品种、光照、水分和土壤影响。"},
+        {"id": "source-record", "provider": "学校科学活动记录", "publishedAt": "2026-04-10", "evidenceType": "连续观察记录", "scope": "本地种植活动，不代表所有品种", "reviewStatus": "reviewed", "content": "合适条件下有的植株可以长得较高。"},
+        {"id": "source-screenshot", "provider": "无来源截图", "publishedAt": "未知", "evidenceType": "无法核对", "scope": "没有说明", "reviewStatus": "unverified", "content": "有人说向日葵一定有两米高。"},
+        {"id": "source-old", "provider": "旧日期网页", "publishedAt": "2012-01-01", "evidenceType": "未更新转述", "scope": "不明", "reviewStatus": "outdated", "content": "没有说明品种和条件。"}
+      ],
+      "riskOptions": [
+        {"id": "no-source", "label": "没有来源"},
+        {"id": "outdated", "label": "来源过时"},
+        {"id": "absolute", "label": "绝对化表达"},
+        {"id": "scope", "label": "适用范围错误"},
+        {"id": "safety", "label": "现实安全风险"}
+      ],
+      "carefulRevision": "一些品种的向日葵在合适条件下可以长得很高，但高度会因品种和环境不同而变化。",
+      "report": "编辑稿已保留原句、来源、修改类型和审核状态，只能进入待审核，不能直接公开发布。"
+    }
+  }
+]

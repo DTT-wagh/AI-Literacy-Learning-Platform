@@ -1,0 +1,16 @@
+{
+  "expo": {
+    "name": "智趣AI学堂",
+    "slug": "witjoy-academy",
+    "version": "0.0.1",
+    "orientation": "default",
+    "newArchEnabled": true,
+    "userInterfaceStyle": "light",
+    "ios": {
+      "bundleIdentifier": "com.witjoyacademy.app"
+    },
+    "android": {
+      "package": "com.witjoyacademy.app"
+    }
+  }
+}

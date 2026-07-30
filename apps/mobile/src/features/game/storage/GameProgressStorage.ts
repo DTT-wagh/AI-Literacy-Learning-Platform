@@ -1,4 +1,5 @@
 import {gameStorage, type GameKeyValueStorage} from './GameStorage';
+import type {GameL1Phase} from '../types/game';
 
 export type StoredGameAnswers = {
   current: string | null;
@@ -6,6 +7,10 @@ export type StoredGameAnswers = {
   aiCorrectionReason: string | null;
   final: string | null;
   options?: string[];
+  l1Assignments?: Record<string, string>;
+  l1History?: string[];
+  l1Corrected?: boolean;
+  l1Explanation?: string | null;
 };
 
 export type StoredGameProgress = {
@@ -15,6 +20,7 @@ export type StoredGameProgress = {
   selectedEvidence: string[];
   completed: boolean;
   updatedAt: string;
+  phase?: GameL1Phase | null;
 };
 
 const PROGRESS_PREFIX = 'game.progress.';

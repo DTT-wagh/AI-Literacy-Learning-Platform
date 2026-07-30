@@ -5,8 +5,12 @@ import {useMachine} from '@xstate/react';
 import {colors, radius, spacing} from '../../../shared/theme/tokens';
 import {userStore} from '../../../store/userStore';
 import {AIAvatar} from '../components/AIAvatar';
+import {AIFeedbackAnimation} from '../components/AIFeedbackAnimation';
 import {AIResultPanel} from '../components/AIResultPanel';
+import {AIPredictionExperiment} from '../components/AIPredictionExperiment';
+import {DragClassificationBoard} from '../components/DragClassificationBoard';
 import {EvidenceCard} from '../components/EvidenceCard';
+import {EvidenceSelector} from '../components/EvidenceSelector';
 import {GameButton} from '../components/GameButton';
 import {ProgressBar} from '../components/ProgressBar';
 import {ReviewPanel} from '../components/ReviewPanel';
@@ -16,7 +20,7 @@ import {evaluateGameAI} from '../services/gameAIService';
 import {gameEventSyncService} from '../services/GameEventSyncService';
 import {eventQueue} from '../storage/EventQueue';
 import {gameProgressStorage} from '../storage/GameProgressStorage';
-import type {GameAIResult, GameLearningRecord, GameStep, GameTask} from '../types/game';
+import type {GameAIResult, GameL1Experiment, GameL1Phase, GameLearningRecord, GameStep, GameTask} from '../types/game';
 
 type GamePlayScreenProps = {
   task: GameTask;
@@ -31,6 +35,8 @@ export function GamePlayScreen({task, onBack, onComplete}: GamePlayScreenProps):
   const loading = state.matches('loading');
   const playing = state.matches('playing');
   const completed = state.matches('completed');
+  const l1Phase = state.context.l1Phase;
+  const isL1Active = task.id === 'language.labels.v1' && l1Phase !== null;
   const [aiResult, setAIResult] = React.useState<GameAIResult | null>(null);
   const [aiLoading, setAILoading] = React.useState(false);
   const aiRequestKey = React.useRef<string | null>(null);
@@ -47,7 +53,7 @@ export function GamePlayScreen({task, onBack, onComplete}: GamePlayScreenProps):
   }, [send, task, userId]);
 
   React.useEffect(() => {
-    if (!userId || (!playing && !completed)) return;
+    if (!userId || (!playing && !isL1Active && !completed)) return;
     gameProgressStorage.save(userId, {
       taskId: task.id,
       currentStep: state.context.currentStepIndex,
@@ -57,12 +63,17 @@ export function GamePlayScreen({task, onBack, onComplete}: GamePlayScreenProps):
         aiCorrectionReason: state.context.aiCorrectionReason,
         final: state.context.finalAnswer,
         options: state.context.selectedOptionIds,
+        l1Assignments: state.context.l1Assignments,
+        l1History: state.context.l1History,
+        l1Corrected: state.context.l1Corrected,
+        l1Explanation: state.context.l1Explanation,
       },
       selectedEvidence: state.context.selectedEvidenceIds,
       completed,
       updatedAt: new Date().toISOString(),
+      phase: l1Phase,
     });
-  }, [completed, playing, state.context, task.id, userId]);
+  }, [completed, isL1Active, l1Phase, playing, state.context, task.id, userId]);
 
   React.useEffect(() => {
     if (!playing || currentStep?.type !== 'aiResult') {
@@ -208,6 +219,47 @@ export function GamePlayScreen({task, onBack, onComplete}: GamePlayScreenProps):
     );
   }
 
+  if (isL1Active && l1Phase && task.l1Experiment) {
+    return (
+      <L1ExperimentView
+        answer={state.context.answer}
+        assignments={state.context.l1Assignments}
+        correctionFeedback={state.context.aiCorrectionReason}
+        experiment={task.l1Experiment}
+        explanationId={state.context.l1Explanation}
+        onAssign={(wordId, categoryId) => send({type: 'CLASSIFY_WORD', wordId, categoryId})}
+        onBack={onBack}
+        onCorrect={categoryId => {
+          if (userId) {
+            eventQueue.enqueue(userId, eventQueue.createEvent(userId, {
+              taskId: task.id,
+              stepId: 'correct-ai',
+              eventType: 'AI_CORRECTION_SELECTED',
+              outcomeCode: toOutcomeCode(categoryId) + '_SELECTED',
+            }));
+          }
+          send({type: 'CORRECT_AI', categoryId});
+        }}
+        onExplain={explanationId => send({type: 'EXPLAIN', explanationId})}
+        onNext={() => {
+          if (userId && l1Phase === 'REWARD') {
+            eventQueue.enqueue(userId, eventQueue.createEvent(userId, {
+              taskId: task.id,
+              stepId: 'reward',
+              eventType: 'TASK_COMPLETED',
+              outcomeCode: 'COMPLETED',
+            }));
+            gameEventSyncService.sync(userId).catch(() => undefined);
+          }
+          send({type: 'NEXT'});
+        }}
+        onUndo={wordId => send({type: 'UNDO_CLASSIFY', wordId})}
+        phase={l1Phase}
+        task={task}
+      />
+    );
+  }
+
   if (!playing || !currentStep) {
     return <View style={styles.loading} />;
   }
@@ -255,6 +307,166 @@ export function GamePlayScreen({task, onBack, onComplete}: GamePlayScreenProps):
   );
 }
 
+type L1ExperimentViewProps = {
+  task: GameTask;
+  experiment: GameL1Experiment;
+  phase: GameL1Phase;
+  assignments: Record<string, string>;
+  answer: string | null;
+  explanationId: string | null;
+  correctionFeedback: string | null;
+  onAssign: (wordId: string, categoryId: string) => void;
+  onUndo: (wordId: string) => void;
+  onCorrect: (categoryId: string) => void;
+  onExplain: (explanationId: string) => void;
+  onNext: () => void;
+  onBack: () => void;
+};
+
+const l1PhaseOrder: GameL1Phase[] = ['INTRO', 'TUTORIAL', 'CLASSIFY', 'AI_PREDICT', 'CORRECT_AI', 'EXPLAIN', 'REVIEW', 'REWARD'];
+
+function L1ExperimentView({task, experiment, phase, assignments, answer, explanationId, correctionFeedback, onAssign, onUndo, onCorrect, onExplain, onNext, onBack}: L1ExperimentViewProps): React.JSX.Element {
+  const phaseIndex = l1PhaseOrder.indexOf(phase);
+  const step = task.steps[phaseIndex];
+  const allClassified = experiment.cards.every(card => Boolean(assignments[card.id]));
+  const correctCategory = experiment.categories.find(category => category.id === experiment.aiMistake.correctCategory)?.label ?? '人物';
+  const predictedCategory = experiment.categories.find(category => category.id === experiment.aiMistake.predictedCategory)?.label ?? '动作';
+
+  return (
+    <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+      <Pressable accessibilityRole="button" onPress={onBack} style={styles.backButton}>
+        <Text style={styles.backText}>退出任务</Text>
+      </Pressable>
+      <View style={styles.header}>
+        <Text style={styles.eyebrow}>{task.title}</Text>
+        <ProgressBar label={'实验步骤 ' + (phaseIndex + 1) + ' / ' + l1PhaseOrder.length} value={((phaseIndex + 1) / l1PhaseOrder.length) * 100} />
+      </View>
+      <View style={styles.card}>
+        <Text style={styles.stepType}>{getL1PhaseLabel(phase)}</Text>
+        <Text style={styles.title}>{step?.title ?? experiment.story.title}</Text>
+        <Text style={styles.description}>{step?.content ?? experiment.story.content}</Text>
+
+        {phase === 'INTRO' ? (
+          <View style={styles.storyPanel}>
+            <Text style={styles.storyTitle}>{experiment.story.title}</Text>
+            <Text style={styles.storyText}>{experiment.story.content}</Text>
+            <AIAvatar message="标签机器不会自己知道每张邮件属于哪一类。我们先给它看标签和例子。" />
+          </View>
+        ) : null}
+
+        {phase === 'TUTORIAL' ? (
+          <View style={styles.tutorialList}>
+            {experiment.tutorial.map(example => (
+              <View key={example.word} style={styles.tutorialRow}>
+                <View style={styles.tutorialWord}><Text style={styles.tutorialWordText}>{example.word}</Text></View>
+                <Text style={styles.tutorialArrow}>→</Text>
+                <View style={styles.tutorialCopy}>
+                  <Text style={styles.tutorialCategory}>{example.category}</Text>
+                  <Text style={styles.tutorialExplanation}>{example.explanation}</Text>
+                </View>
+              </View>
+            ))}
+            <AIAvatar message="这些是人先贴好的标签。AI看过许多这样的例子，才会慢慢找到规律。" />
+          </View>
+        ) : null}
+
+        {phase === 'CLASSIFY' ? (
+          <DragClassificationBoard assignments={assignments} cards={experiment.cards} categories={experiment.categories} onAssign={onAssign} onUndo={onUndo} />
+        ) : null}
+
+        {phase === 'AI_PREDICT' ? <AIFeedbackAnimation experiment={experiment} /> : null}
+
+        {phase === 'CORRECT_AI' ? (
+          <View style={styles.correctionPanel}>
+            <Text style={styles.correctionFlag}>⚑ 纠错旗</Text>
+            <Text style={styles.correctionQuestion}>“{experiment.aiMistake.word}”应该放进哪个邮筒？</Text>
+            <View style={styles.options}>
+              {experiment.categories.map(category => (
+                <Pressable accessibilityRole="button" accessibilityState={{selected: answer === category.id}} key={category.id} onPress={() => onCorrect(category.id)} style={[styles.option, answer === category.id && styles.optionSelected]}>
+                  <Text style={[styles.optionText, answer === category.id && styles.optionTextSelected]}>{category.label} · {category.prompt}</Text>
+                </Pressable>
+              ))}
+            </View>
+            {answer && answer !== experiment.aiMistake.correctCategory ? (
+              <View style={styles.feedback}><Text style={styles.feedbackText}>{correctionFeedback ?? '这个想法用到了词语的一部分，再看看它表示谁，还是表示做什么。'}</Text></View>
+            ) : null}
+          </View>
+        ) : null}
+
+        {phase === 'EXPLAIN' ? (
+          <View style={styles.explainPanel}>
+            <View style={styles.newSample}>
+              <Text style={styles.newSampleLabel}>新增学习样本</Text>
+              <Text style={styles.newSampleValue}>{experiment.aiMistake.word} → {correctCategory}</Text>
+            </View>
+            <Text style={styles.prompt}>为什么“{experiment.aiMistake.word}”属于{correctCategory}？</Text>
+            <EvidenceSelector onSelect={onExplain} options={experiment.explanationOptions} selectedId={explanationId} />
+            {explanationId && explanationId !== experiment.aiMistake.correctExplanationId ? (
+              <View style={styles.feedback}><Text style={styles.feedbackText}>{correctionFeedback}</Text></View>
+            ) : null}
+          </View>
+        ) : null}
+
+        {phase === 'REVIEW' ? (
+          <View style={styles.l1Review}>
+            <L1ReviewRow label="学生标签" value={formatAssignmentSummary(experiment, assignments)} />
+            <L1ReviewRow label="AI第一次判断" value={experiment.aiMistake.word + ' → ' + predictedCategory} />
+            <L1ReviewRow label="学生纠正" value={experiment.aiMistake.word + ' → ' + correctCategory} />
+            <L1ReviewRow label="最终规律" value={experiment.reviewSummary} strong />
+          </View>
+        ) : null}
+
+        {phase === 'REWARD' ? (
+          <View style={styles.l1Reward}>
+            <Text style={styles.rewardBadge}>L1 实验完成</Text>
+            <Text style={styles.rewardChip}>▣</Text>
+            <Text style={styles.rewardTitle}>标签整理员芯片</Text>
+            <Text style={styles.rewardMessage}>{experiment.reviewSummary}</Text>
+            <AIAvatar message="你先给AI看标签和例子，又检查并纠正了它的候选结果。" />
+          </View>
+        ) : null}
+
+        {phase === 'INTRO' ? <GameButton label="查看标签示例" onPress={onNext} /> : null}
+        {phase === 'TUTORIAL' ? <GameButton label="开始整理邮件" onPress={onNext} /> : null}
+        {phase === 'CLASSIFY' ? <GameButton disabled={!allClassified} label={allClassified ? '让AI试一试' : '整理完12张卡后继续'} onPress={onNext} /> : null}
+        {phase === 'AI_PREDICT' ? <GameButton label="举起纠错旗" onPress={onNext} /> : null}
+        {phase === 'REVIEW' ? <GameButton label="领取标签整理员芯片" onPress={onNext} /> : null}
+        {phase === 'REWARD' ? <GameButton label="完成实验" onPress={onNext} /> : null}
+      </View>
+    </ScrollView>
+  );
+}
+
+function L1ReviewRow({label, value, strong = false}: {label: string; value: string; strong?: boolean}): React.JSX.Element {
+  return (
+    <View style={styles.l1ReviewRow}>
+      <Text style={styles.l1ReviewLabel}>{label}</Text>
+      <Text style={[styles.l1ReviewValue, strong && styles.l1ReviewStrong]}>{value}</Text>
+    </View>
+  );
+}
+
+function formatAssignmentSummary(experiment: GameL1Experiment, assignments: Record<string, string>): string {
+  return experiment.categories.map(category => {
+    const words = experiment.cards.filter(card => assignments[card.id] === category.id).map(card => card.text);
+    return category.label + '：' + (words.join('、') || '暂无');
+  }).join('；');
+}
+
+function getL1PhaseLabel(phase: GameL1Phase): string {
+  const labels: Record<GameL1Phase, string> = {
+    INTRO: '故事简报',
+    TUTORIAL: '热身教学',
+    CLASSIFY: '词语标签实验',
+    AI_PREDICT: 'AI尝试分类',
+    CORRECT_AI: '学生纠错',
+    EXPLAIN: '说出依据',
+    REVIEW: '学习复盘',
+    REWARD: '完成奖励',
+  };
+  return labels[phase];
+}
+
 type StepContentProps = {
   step: GameStep;
   task: GameTask;
@@ -270,8 +482,52 @@ type StepContentProps = {
 };
 
 function StepContent({step, task, aiLoading, aiResult, answer, selectedEvidenceIds, selectedOptionIds, record, onAnswer, onToggleEvidence, onToggleOption}: StepContentProps): React.JSX.Element | null {
+  if (task.predictionExperiment && step.id === 'data-observation') {
+    return (
+      <AIPredictionExperiment
+        experiment={task.predictionExperiment}
+        onSelectOption={() => undefined}
+        selectedOptionId={null}
+        stage="data"
+      />
+    );
+  }
+
+  if (task.predictionExperiment && step.id === 'pattern-discovery') {
+    return (
+      <AIPredictionExperiment
+        experiment={task.predictionExperiment}
+        onSelectOption={() => undefined}
+        selectedOptionId={null}
+        stage="pattern"
+      />
+    );
+  }
+
   if (step.type === 'intro' && step.previewOptions) {
     return <View style={styles.previewOptions}>{step.previewOptions.map(option => <Text key={option} style={styles.previewOption}>{option}</Text>)}</View>;
+  }
+
+  if (task.predictionExperiment && step.type === 'initialChoice') {
+    return (
+      <AIPredictionExperiment
+        experiment={task.predictionExperiment}
+        onSelectOption={onAnswer}
+        selectedOptionId={answer ?? record.studentAnswer}
+        stage="choice"
+      />
+    );
+  }
+
+  if (task.predictionExperiment && step.type === 'prediction') {
+    return (
+      <AIPredictionExperiment
+        experiment={task.predictionExperiment}
+        onSelectOption={() => undefined}
+        selectedOptionId={record.studentAnswer}
+        stage="analysis"
+      />
+    );
   }
 
   if (step.type === 'evidence' || step.type === 'sourceEvidence') {
@@ -431,6 +687,14 @@ function toOutcomeCode(value: string): string {
 }
 
 function getStepLabel(step: GameStep): string {
+  const mathPredictionLabels: Record<string, string> = {
+    'data-observation': '数据输入',
+    'pattern-discovery': '发现规律与数学计算',
+    'prediction-challenge': '概率预测',
+    'ai-explanation': '输出判断与AI解释',
+  };
+  if (mathPredictionLabels[step.id]) return mathPredictionLabels[step.id];
+
   const labels: Record<GameStep['type'], string> = {
     intro: '任务介绍',
     choice: '选择挑战',
@@ -449,6 +713,7 @@ function getStepLabel(step: GameStep): string {
     sourceEvidence: '来源证据',
     factRevision: '修正发布',
     publish: '负责发布',
+    prediction: 'AI预测分析',
     aiResult: 'AI候选分析',
     counterexample: '语境变化',
     aiCorrection: '检查AI候选结果',
@@ -491,6 +756,31 @@ const styles = StyleSheet.create({
   rewardMessage: {color: colors.mutedText, fontSize: 15, lineHeight: 22},
   score: {color: colors.success, fontSize: 20, lineHeight: 28, fontWeight: '800'},
   action: {color: colors.text, fontSize: 14, lineHeight: 21},
+  storyPanel: {gap: spacing.md, padding: spacing.md, borderRadius: radius.md, backgroundColor: '#FFF8E8'},
+  storyTitle: {color: colors.text, fontSize: 20, lineHeight: 28, fontWeight: '800'},
+  storyText: {color: colors.mutedText, fontSize: 15, lineHeight: 23},
+  tutorialList: {gap: spacing.md},
+  tutorialRow: {flexDirection: 'row', alignItems: 'center', gap: spacing.sm, padding: spacing.sm, borderWidth: 1, borderColor: colors.border, borderRadius: radius.sm, backgroundColor: '#F7FAFC'},
+  tutorialWord: {minWidth: 72, minHeight: 52, alignItems: 'center', justifyContent: 'center', paddingHorizontal: spacing.sm, borderRadius: radius.sm, backgroundColor: colors.surface},
+  tutorialWordText: {color: colors.text, fontSize: 18, lineHeight: 26, fontWeight: '800'},
+  tutorialArrow: {color: colors.brand, fontSize: 22, lineHeight: 28, fontWeight: '800'},
+  tutorialCopy: {flex: 1, gap: spacing.xs},
+  tutorialCategory: {color: colors.brand, fontSize: 16, lineHeight: 22, fontWeight: '800'},
+  tutorialExplanation: {color: colors.mutedText, fontSize: 13, lineHeight: 19},
+  correctionPanel: {gap: spacing.md},
+  correctionFlag: {alignSelf: 'flex-start', color: '#B34C3D', fontSize: 18, lineHeight: 26, fontWeight: '800'},
+  correctionQuestion: {color: colors.text, fontSize: 18, lineHeight: 27, fontWeight: '800'},
+  explainPanel: {gap: spacing.md},
+  newSample: {gap: spacing.xs, padding: spacing.md, borderWidth: 1, borderColor: '#9ACCC4', borderRadius: radius.md, backgroundColor: '#F0FAF6'},
+  newSampleLabel: {color: colors.success, fontSize: 13, lineHeight: 20, fontWeight: '800'},
+  newSampleValue: {color: colors.text, fontSize: 22, lineHeight: 30, fontWeight: '800'},
+  l1Review: {gap: spacing.sm, padding: spacing.md, borderRadius: radius.md, backgroundColor: '#F3F7F9'},
+  l1ReviewRow: {gap: spacing.xs, paddingBottom: spacing.sm, borderBottomWidth: 1, borderBottomColor: colors.border},
+  l1ReviewLabel: {color: colors.brand, fontSize: 13, lineHeight: 20, fontWeight: '800'},
+  l1ReviewValue: {color: colors.text, fontSize: 15, lineHeight: 23},
+  l1ReviewStrong: {color: colors.success, fontWeight: '800'},
+  l1Reward: {alignItems: 'center', gap: spacing.sm, padding: spacing.md, borderRadius: radius.md, backgroundColor: '#FFF8E8'},
+  rewardChip: {color: '#B27700', fontSize: 50, lineHeight: 58, fontWeight: '800'},
   completed: {flex: 1, justifyContent: 'center', gap: spacing.md, paddingVertical: spacing.xl},
   completedEyebrow: {color: colors.success, fontSize: 14, lineHeight: 20, fontWeight: '700'},
   completedTitle: {color: colors.text, fontSize: 26, lineHeight: 34, fontWeight: '700'},

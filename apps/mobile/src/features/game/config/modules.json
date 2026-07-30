@@ -3,58 +3,32 @@
     "id": "language",
     "name": "语文岛：语言侦探社",
     "goal": "AI怎样理解语言",
-    "description": "从词语标签、语境线索、候选故事和来源卡中调查语言AI，并用证据作出最后判断。",
-    "progress": 25,
+    "description": "在一个完整任务里依次完成词语标签、语境判断和说法分类，理解AI处理语言时为什么需要人的判断。",
+    "progress": 0,
     "unlocked": true,
-    "accentColor": "#7656A8",
-    "levels": [
-      {
-        "id": "L1",
-        "title": "词语标签实验室",
-        "question": "AI怎样知道一个词属于哪一类？",
-        "subtasks": ["认识标签", "训练样本", "处理例外"]
-      },
-      {
-        "id": "L2",
-        "title": "语境侦探",
-        "question": "为什么同一句话会有不同意思？",
-        "subtasks": ["文字语境", "表情语气", "信息不足"]
-      },
-      {
-        "id": "L3",
-        "title": "故事共创室",
-        "question": "怎样让AI更接近我的创作意图？",
-        "subtasks": ["补全意图", "比较三稿", "人类改写"]
-      },
-      {
-        "id": "L4",
-        "title": "小编辑核验台",
-        "question": "AI写得流畅就一定是真的吗？",
-        "subtasks": ["事实/观点", "来源卡", "修正发布"]
-      }
-    ]
+    "accentColor": "#7656A8"
   },
   {
     "id": "math",
     "name": "数学岛",
-    "goal": "AI分类和规则",
-    "description": "观察数字与图形的共同点，体验AI如何根据规则完成分类。",
+    "goal": "AI如何发现规律",
+    "description": "用一个完整互动任务观察数据输入、规律发现、数学计算、概率预测和输出判断，理解AI怎样利用数学处理数据。",
     "progress": 0,
     "unlocked": true
   },
   {
     "id": "science",
     "name": "科学岛",
-    "goal": "AI图像识别",
-    "description": "从物体特征出发，认识AI进行图像识别时会关注的信息。",
+    "goal": "AI如何理解世界",
+    "description": "从人类观察出发，把图片转成像素和数字特征，再通过清晰度实验理解模型怎样寻找规律并作出预测。",
     "progress": 0,
     "unlocked": true
   },
   {
     "id": "creative",
-    "name": "创造岛",
-    "goal": "AI生成与修改",
-    "description": "组合清晰的创作要求，学习怎样描述和修改一份AI作品。",
+    "name": "艺术岛",
+    "goal": "AI图片创作",
+    "description": "组合关键词，把画面想法交给绘图AI，直接查看返回的图片。",
     "progress": 0,
     "unlocked": true
   }

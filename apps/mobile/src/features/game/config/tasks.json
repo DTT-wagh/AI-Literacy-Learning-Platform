@@ -1,0 +1,97 @@
+[
+  {
+    "id": "math.prediction.v1",
+    "title": "AI如何发现规律",
+    "description": "沿着数据输入、规律发现、数学计算、概率预测和输出判断，完整体验AI如何利用数学处理数据。",
+    "module": "math",
+    "difficulty": "easy",
+    "version": 1,
+    "predictionExperiment": {
+      "records": [
+        {"id": "ai-video", "label": "AI视频", "count": 8},
+        {"id": "drawing", "label": "绘画", "count": 6},
+        {"id": "math", "label": "数学", "count": 2},
+        {"id": "music", "label": "音乐", "count": 1}
+      ],
+      "feature": {
+        "title": "Step 1 数据输入",
+        "description": "AI收到17条近期学习记录。次数越多，表示这个兴趣特征在数据中越突出。",
+        "unit": "次",
+        "maxCount": 8
+      },
+      "options": [
+        {"id": "ai-drawing", "label": "A. AI绘画课程"},
+        {"id": "math-formula", "label": "B. 数学公式课程"},
+        {"id": "music-creation", "label": "C. 音乐创作课程"}
+      ],
+      "prediction": {
+        "relation": {
+          "label": "AI视频与绘画是共同突出的特征",
+          "score": 82,
+          "explanation": "AI把两类相近特征合并计算：8 + 6 = 14，全部记录为17，14 ÷ 17 ≈ 82%。"
+        },
+        "result": {
+          "title": "输出判断",
+          "optionId": "ai-drawing",
+          "label": "AI绘画课程：预测概率约82%",
+          "explanation": "在这个简化模型里，AI把82%的特征占比作为概率估算依据，再从三个候选中输出最可能的一个；预测仍可能出错。"
+        },
+        "takeaway": {
+          "title": "AI通识结论",
+          "text": "AI不是像人一样理解，而是通过数据和数学规律进行预测。"
+        }
+      }
+    },
+    "steps": [
+      {
+        "id": "data-observation",
+        "type": "intro",
+        "title": "Step 1 数据观察",
+        "content": "先查看AI收到的17条学习记录。此时只有数据，还没有结论。"
+      },
+      {
+        "id": "pattern-discovery",
+        "type": "prediction",
+        "title": "Step 2 规律发现",
+        "content": "AI把次数转成数学特征，找出共同突出的关系，再计算它们在全部数据中的占比。"
+      },
+      {
+        "id": "prediction-challenge",
+        "type": "initialChoice",
+        "title": "Step 3 预测挑战",
+        "content": "现在由你先判断：如果只根据这些数据和数学规律，AI最可能推荐什么？"
+      },
+      {
+        "id": "ai-explanation",
+        "type": "prediction",
+        "title": "Step 4 AI解释",
+        "content": "对照你的选择，查看AI如何从数据输入走到概率预测和输出判断。"
+      }
+    ]
+  },
+  {
+    "id": "science.image.v1",
+    "title": "关键词创作工作室",
+    "description": "从关键词组合Prompt，让绘图AI返回一张图片。",
+    "module": "creative",
+    "difficulty": "easy",
+    "steps": [
+      {
+        "id": "start",
+        "type": "intro",
+        "title": "创作任务",
+        "content": "选择画面主体、地点、氛围和风格，让绘图AI直接返回一张图片。"
+      },
+      {
+        "id": "choice",
+        "type": "choice",
+        "title": "组合关键词",
+        "content": "艺术岛会提供审核过的关键词，服务端负责组合Prompt并请求绘图AI。",
+        "options": [
+          {"id": "keywords", "label": "进入关键词创作"},
+          {"id": "review", "label": "查看AI生成图片"}
+        ]
+      }
+    ]
+  }
+]
