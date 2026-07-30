@@ -1,0 +1,378 @@
+openapi: 3.1.0
+info:
+  title: WitJoy AI Academy API
+  version: 0.2.0
+  description: Versioned API contract for 智趣AI学堂.
+servers:
+  - url: /api/v1
+tags:
+  - name: System
+  - name: Game
+  - name: AI Tasks
+paths:
+  /system/health:
+    get:
+      tags: [System]
+      summary: Read API readiness metadata
+      operationId: getSystemHealth
+      responses:
+        "200":
+          description: API is available
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SystemHealthResponse"
+  /game/sessions:
+    post:
+      tags: [Game]
+      summary: Create a game session for the authenticated user
+      operationId: createGameSession
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateGameSessionRequest"
+      responses:
+        "200":
+          description: Session created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GameSessionApiResponse"
+        "401":
+          description: Authentication required
+  /game/events/batch:
+    post:
+      tags: [Game]
+      summary: Upload a batch of minimized learning events
+      description: Replaying the same event ID with identical content succeeds. Reusing an event ID with different content returns 409.
+      operationId: uploadGameEvents
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GameEventBatchRequest"
+      responses:
+        "200":
+          description: Events accepted or idempotently replayed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GameEventBatchApiResponse"
+        "409":
+          description: Event ID conflicts with different content
+  /game/progress:
+    get:
+      tags: [Game]
+      summary: Read task progress for the authenticated user
+      operationId: getGameProgress
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Progress grouped by task
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GameProgressApiResponse"
+        "401":
+          description: Authentication required
+  /game/statistics:
+    get:
+      tags: [Game]
+      summary: Read private learning statistics without rankings
+      operationId: getGameStatistics
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Behavior-based learning statistics
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GameStatisticsApiResponse"
+        "401":
+          description: Authentication required
+  /ai/tasks/questions:
+    servers:
+      - url: /api/v2
+    post:
+      tags: [AI Tasks]
+      summary: Create an asynchronous AI question task
+      operationId: createAiQuestionTask
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AiQuestionGenerateRequest"
+      responses:
+        "202":
+          description: Task accepted for asynchronous processing
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AiTaskCreateApiResponse"
+        "401":
+          description: Authentication required
+  /ai/tasks/{taskId}:
+    servers:
+      - url: /api/v2
+    get:
+      tags: [AI Tasks]
+      summary: Read an owned AI task status
+      operationId: getAiTask
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: taskId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Current task status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AiTaskStatusApiResponse"
+        "401":
+          description: Authentication required
+        "404":
+          description: Task not found for the authenticated user
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    SystemHealthResponse:
+      type: object
+      required: [service, status, timestamp]
+      properties:
+        service:
+          type: string
+          example: witjoy-api
+        status:
+          type: string
+          enum: [UP]
+        timestamp:
+          type: string
+          format: date-time
+    CreateGameSessionRequest:
+      type: object
+      required: [taskId]
+      additionalProperties: false
+      properties:
+        taskId:
+          type: string
+          maxLength: 100
+          pattern: "^[A-Za-z0-9._:-]+$"
+          example: language.context.v1
+    GameSession:
+      type: object
+      required: [sessionId, taskId, status, createdTime]
+      properties:
+        sessionId:
+          type: integer
+          format: int64
+        taskId:
+          type: string
+        status:
+          type: string
+          enum: [PLAYING, COMPLETED]
+        createdTime:
+          type: string
+          format: date-time
+    GameEvent:
+      type: object
+      required: [eventId, eventType, stepId, outcomeCode]
+      additionalProperties: false
+      properties:
+        eventId:
+          type: string
+          maxLength: 64
+          pattern: "^[A-Za-z0-9._:-]+$"
+        eventType:
+          type: string
+          maxLength: 40
+          pattern: "^[A-Z][A-Z0-9_]*$"
+        stepId:
+          type: string
+          maxLength: 100
+          pattern: "^[A-Za-z0-9._:-]+$"
+        outcomeCode:
+          type: string
+          maxLength: 64
+          pattern: "^[A-Z][A-Z0-9_]*$"
+    GameEventBatchRequest:
+      type: object
+      required: [sessionId, events]
+      additionalProperties: false
+      properties:
+        sessionId:
+          type: integer
+          format: int64
+        events:
+          type: array
+          minItems: 1
+          maxItems: 100
+          items:
+            $ref: "#/components/schemas/GameEvent"
+    GameProgress:
+      type: object
+      required: [taskId, status, completed, updatedTime]
+      properties:
+        taskId:
+          type: string
+        status:
+          type: string
+          enum: [PLAYING, COMPLETED]
+        lastStepId:
+          type: [string, "null"]
+        completed:
+          type: boolean
+        updatedTime:
+          type: string
+          format: date-time
+    GameStatistics:
+      type: object
+      required: [aiExplorationCount, completedTaskCount, aiCorrectionCount, abilityTags]
+      properties:
+        aiExplorationCount:
+          type: integer
+          minimum: 0
+        completedTaskCount:
+          type: integer
+          minimum: 0
+        aiCorrectionCount:
+          type: integer
+          minimum: 0
+        abilityTags:
+          type: array
+          items:
+            type: string
+    GameSessionApiResponse:
+      allOf:
+        - $ref: "#/components/schemas/SuccessEnvelope"
+        - type: object
+          properties:
+            data:
+              $ref: "#/components/schemas/GameSession"
+    GameEventBatchApiResponse:
+      allOf:
+        - $ref: "#/components/schemas/SuccessEnvelope"
+        - type: object
+          properties:
+            data:
+              type: object
+              required: [acceptedCount]
+              properties:
+                acceptedCount:
+                  type: integer
+                  minimum: 0
+    GameProgressApiResponse:
+      allOf:
+        - $ref: "#/components/schemas/SuccessEnvelope"
+        - type: object
+          properties:
+            data:
+              type: array
+              items:
+                $ref: "#/components/schemas/GameProgress"
+    GameStatisticsApiResponse:
+      allOf:
+        - $ref: "#/components/schemas/SuccessEnvelope"
+        - type: object
+          properties:
+            data:
+              $ref: "#/components/schemas/GameStatistics"
+    SuccessEnvelope:
+      type: object
+      required: [code, message, data]
+      properties:
+        code:
+          type: integer
+          const: 200
+        message:
+          type: string
+        data: {}
+    AiQuestionGenerateRequest:
+      type: object
+      required: [subject, difficulty]
+      additionalProperties: false
+      properties:
+        subject:
+          type: string
+          minLength: 1
+          example: 人工智能基础
+        difficulty:
+          type: string
+          minLength: 1
+          example: 基础
+    AiQuestion:
+      type: object
+      required: [question, options, answer, analysis, difficulty]
+      properties:
+        question:
+          type: string
+        options:
+          type: array
+          minItems: 4
+          maxItems: 4
+          items:
+            type: string
+        answer:
+          type: string
+        analysis:
+          type: string
+        difficulty:
+          type: string
+    AiTaskCreate:
+      type: object
+      required: [taskId, status]
+      properties:
+        taskId:
+          type: string
+        status:
+          type: string
+          enum: [PENDING]
+    AiTaskStatus:
+      type: object
+      required: [taskId, status, result]
+      properties:
+        taskId:
+          type: string
+        status:
+          type: string
+          enum: [PENDING, RUNNING, SUCCESS, REVIEW_REQUIRED, FAILED]
+        result:
+          type: [array, "null"]
+          items:
+            $ref: "#/components/schemas/AiQuestion"
+        errorMessage:
+          type: [string, "null"]
+    AiTaskCreateApiResponse:
+      allOf:
+        - $ref: "#/components/schemas/SuccessEnvelope"
+        - type: object
+          properties:
+            data:
+              $ref: "#/components/schemas/AiTaskCreate"
+    AiTaskStatusApiResponse:
+      allOf:
+        - $ref: "#/components/schemas/SuccessEnvelope"
+        - type: object
+          properties:
+            data:
+              $ref: "#/components/schemas/AiTaskStatus"

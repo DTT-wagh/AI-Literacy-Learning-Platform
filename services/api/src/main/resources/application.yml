@@ -1,0 +1,62 @@
+server:
+  port: ${SERVER_PORT:8080}
+  servlet:
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
+
+ai:
+  provider:
+    type: ${AI_PROVIDER:mock}
+
+spring:
+  config:
+    # Load an untracked local .env when present. Shell and IDE environment
+    # variables keep higher precedence than this optional file.
+    import: optional:file:.env[.properties]
+  application:
+    name: witjoy-ai-academy-api
+  datasource:
+    url: ${DB_URL:jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:witjoy_ai_academy}?useUnicode=true&characterEncoding=UTF-8&connectionCollation=utf8mb4_unicode_ci&serverTimezone=Asia/Shanghai}
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  redis:
+    host: ${REDIS_HOST:localhost}
+    port: ${REDIS_PORT:6379}
+    password: ${REDIS_PASSWORD:}
+    timeout: 3000ms
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+  global-config:
+    db-config:
+      id-type: auto
+
+app:
+  verification:
+    # Development-only fallback. Deployments must set a real delivery provider
+    # and leave this value unset.
+    dev-code: ${DEV_VERIFY_CODE:}
+  ai:
+    mock-enabled: ${AI_MOCK_ENABLED:true}
+    llm-endpoint: ${AI_LLM_ENDPOINT:}
+    llm-api-key: ${AI_LLM_API_KEY:}
+    llm-model: ${AI_LLM_MODEL:gpt-4o-mini}
+    connect-timeout-ms: ${AI_CONNECT_TIMEOUT_MS:3000}
+    read-timeout-ms: ${AI_READ_TIMEOUT_MS:10000}
+  jwt:
+    issuer: ${JWT_ISSUER:witjoy-ai-academy}
+    secret: ${JWT_SECRET}
+    expire-seconds: ${JWT_EXPIRE_SECONDS:604800}
+  oss:
+    endpoint: ${OSS_ENDPOINT:}
+    access-key: ${OSS_ACCESS_KEY:}
+    secret-key: ${OSS_SECRET_KEY:}
+    bucket: ${OSS_BUCKET:}
