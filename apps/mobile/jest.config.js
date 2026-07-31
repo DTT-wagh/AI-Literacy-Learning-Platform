@@ -10,5 +10,6 @@ module.exports = {
     '^react-native-safe-area-context$': '<rootDir>/test/safeAreaMock.js',
     '^react-native-mmkv$': '<rootDir>/test/mmkvMock.js',
     '^@react-native-community/netinfo$': '<rootDir>/test/netInfoMock.js',
+    '^expo-image-picker$': '<rootDir>/test/imagePickerMock.js',
   },
 };

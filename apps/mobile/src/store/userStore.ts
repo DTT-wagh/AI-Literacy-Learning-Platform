@@ -11,6 +11,7 @@ type UserState = {
 type UserStore = UserState & {
   hydrate: () => Promise<void>;
   login: (loginData: LoginData) => Promise<void>;
+  updateProfile: (userInfo: UserInfo) => Promise<void>;
   logout: () => Promise<void>;
   getCurrentUser: () => UserInfo | null;
   subscribe: (listener: () => void) => () => void;
@@ -48,6 +49,12 @@ export const userStore: UserStore = {
     state.token = loginData.token;
     state.userInfo = loginData.user;
     state.isLoggedIn = true;
+    Object.assign(userStore, state);
+    notify();
+  },
+  async updateProfile(userInfo: UserInfo): Promise<void> {
+    await saveUserInfo(userInfo);
+    state.userInfo = userInfo;
     Object.assign(userStore, state);
     notify();
   },

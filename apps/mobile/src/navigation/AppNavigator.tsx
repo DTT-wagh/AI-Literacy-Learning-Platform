@@ -6,6 +6,7 @@ import {mainTabs} from '../constants/navigation';
 import {AuthFlow} from '../features/auth';
 import {getCourseDetail, type CourseDetail, type CourseLesson} from '../api/course';
 import {startLearning, type LearningRecord} from '../api/learning';
+import {updateUserProfile, type UpdateProfileParams} from '../api/user';
 import {CourseDetailScreen} from '../features/course/screens/CourseDetailScreen';
 import {LearningScreen as LessonLearningScreen} from '../features/course/screens/LearningScreen';
 import {LearningScreen} from '../features/learning/screens/LearningScreen';
@@ -27,6 +28,8 @@ import {
 } from '../features/community/screens/CommunityScreen';
 import {AIChallengeScreen} from '../pages/AIChallenge/AIChallengeScreen';
 import {MineScreen} from '../features/mine/screens/MineScreen';
+import {ProfileEditScreen} from '../features/mine/screens/ProfileEditScreen';
+import {toLocalAvatarId} from '../features/mine/profileAvatars';
 import {GrowthScreen} from '../features/growth/GrowthScreen';
 import {MentorProfileScreen} from '../features/mentor/MentorProfileScreen';
 import {userStore} from '../store/userStore';
@@ -68,6 +71,7 @@ export function AppNavigator(): React.JSX.Element {
     | {name: 'aiChallenge'}
     | {name: 'growth'}
     | {name: 'mentorProfile'}
+    | {name: 'profileEdit'}
   >({name: 'tabs'});
   const [, setStoreVersion] = useState(0);
   const {width} = useWindowDimensions();
@@ -99,6 +103,14 @@ export function AppNavigator(): React.JSX.Element {
 
   const handleLogout = async (): Promise<void> => {
     await userStore.logout();
+    setRoute({name: 'tabs'});
+  };
+
+  const handleProfileSave = async (params: UpdateProfileParams): Promise<void> => {
+    const updatedUser = await updateUserProfile(params);
+    await userStore.updateProfile(params.localAvatarUri
+      ? {...updatedUser, avatar: toLocalAvatarId(params.localAvatarUri)}
+      : updatedUser);
     setRoute({name: 'tabs'});
   };
 
@@ -307,6 +319,18 @@ export function AppNavigator(): React.JSX.Element {
     );
   }
 
+  if (route.name === 'profileEdit') {
+    return (
+      <View style={[styles.page, wide && styles.pageWide]}>
+        <ProfileEditScreen
+          onBack={() => setRoute({name: 'tabs'})}
+          onSave={handleProfileSave}
+          userInfo={userStore.userInfo}
+        />
+      </View>
+    );
+  }
+
   return (
     <View style={[styles.page, wide && styles.pageWide]}>
       {activeTab === 'home' ? (
@@ -346,6 +370,7 @@ export function AppNavigator(): React.JSX.Element {
         <MineScreen
           onLogout={handleLogout}
           onOpenGrowth={() => setRoute({name: 'growth'})}
+          onOpenProfileEdit={() => setRoute({name: 'profileEdit'})}
           userInfo={userStore.userInfo}
         />
       ) : (

@@ -16,7 +16,13 @@ pnpm.cmd install
 2. 生成并安装开发构建：`pnpm.cmd --dir apps/mobile android`。
 3. 后续启动 Metro：`pnpm.cmd --dir apps/mobile start:dev`。
 
+新增或升级 Expo 原生模块后，必须先停止旧 Metro，再清缓存启动：`pnpm.cmd --dir apps/mobile exec expo start --dev-client --lan --clear --port 8081`；同时需要重新生成并安装 Android development build，不能只在旧安装包上刷新 JS。
+
 MMKV v4 依赖 React Native New Architecture（本项目已启用），最低 Android API 23、iOS 15.1；不申请运行时权限。Windows 负责 Android 首验，iOS 构建与横竖屏/字体放大最终验收需在 Mac/Xcode 完成。
+
+### 头像相册与相机
+
+资料编辑使用 `expo-image-picker@57.0.6`。项目当前 Android debug 构建的最低 API 为 24，iOS 沿用项目最低版本 15.1。Android 由模块声明 `CAMERA` 及 API 32 及以下的相册存储权限；iOS 由 `app.json` 声明相册和相机用途说明，并明确关闭麦克风权限。用户拒绝权限、取消选择或设备调用失败时，继续保留内置头像；照片只保存为本机 URI，不会发送到现有资料 API，云端头像上传待后续接口支持。
 
 语境侦探进入“AI候选分析”步骤时，会通过 `EXPO_PUBLIC_API_URL` 调用后端 `/api/v1/game/ai-evaluate`。请求沿用登录 Token；移动端不会保存或配置 AI Provider Key。后端不可用时，游戏显示低置信度降级候选并允许继续复盘。
 

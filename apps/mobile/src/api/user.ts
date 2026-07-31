@@ -17,6 +17,14 @@ export type UserInfo = {
   id: number;
   username: string;
   phone: string;
+  avatar?: string | null;
+};
+
+export type UpdateProfileParams = {
+  username: string;
+  avatar: string;
+  /** Local-only photo URI. It is never sent to the profile API. */
+  localAvatarUri?: string;
 };
 
 type ApiResponse<T> = {
@@ -57,6 +65,21 @@ export async function sendRegistrationCode(phone: string): Promise<void> {
 
 export async function register(params: RegisterParams): Promise<LoginData> {
   return postAuth('/api/user/register', params);
+}
+
+export async function updateUserProfile(params: UpdateProfileParams): Promise<UserInfo> {
+  try {
+    const response = await http.patch<ApiResponse<UserInfo>>('/api/v1/user/profile', {
+      username: params.username,
+      avatar: params.avatar,
+    });
+    if (response.data.code !== 200) {
+      throw new UserApiError(response.data.message || '资料更新失败，请稍后重试。');
+    }
+    return response.data.data;
+  } catch (error) {
+    throw toUserApiError(error);
+  }
 }
 
 async function postAuth(path: string, params: LoginParams | RegisterParams): Promise<LoginData> {

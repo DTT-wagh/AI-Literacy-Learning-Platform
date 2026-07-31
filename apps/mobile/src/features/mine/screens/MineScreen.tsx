@@ -1,13 +1,15 @@
 import React, {useEffect, useState} from 'react';
-import {Alert, Pressable, ScrollView, StyleSheet, Text, View} from 'react-native';
+import {Alert, Image, Pressable, ScrollView, StyleSheet, Text, View} from 'react-native';
 
 import {getLearningStats, type LearningStats} from '../../../api/learning';
 import type {UserInfo} from '../../../api/user';
 import {colors, radius, spacing} from '../../../shared/theme/tokens';
+import {getLocalAvatarUri, getProfileAvatar} from '../profileAvatars';
 
 type MineScreenProps = {
   onLogout: () => void;
   onOpenGrowth: () => void;
+  onOpenProfileEdit: () => void;
   userInfo: UserInfo;
 };
 
@@ -18,7 +20,7 @@ const menuItems = [
   {icon: 'Settings', title: '设置', description: '设置功能等待接入'},
 ];
 
-export function MineScreen({onLogout, onOpenGrowth, userInfo}: MineScreenProps): React.JSX.Element {
+export function MineScreen({onLogout, onOpenGrowth, onOpenProfileEdit, userInfo}: MineScreenProps): React.JSX.Element {
   const [stats, setStats] = useState<LearningStats>({courseCount: 0, lessonCount: 0, studyMinutes: 0});
   const [statsAvailable, setStatsAvailable] = useState(false);
 
@@ -38,15 +40,13 @@ export function MineScreen({onLogout, onOpenGrowth, userInfo}: MineScreenProps):
       contentContainerStyle={styles.content}
       showsVerticalScrollIndicator={false}
       style={styles.scrollView}>
-      <View style={styles.profileCard}>
-        <View accessibilityLabel="用户头像" style={styles.avatar}>
-          <Text style={styles.avatarText}>{userInfo.username.slice(0, 1).toUpperCase()}</Text>
-        </View>
+      <Pressable accessibilityLabel="编辑个人资料" accessibilityRole="button" onPress={onOpenProfileEdit} style={styles.profileCard}>
+        <ProfileAvatarView avatar={userInfo.avatar} username={userInfo.username} />
         <View style={styles.userDetails}>
           <Text style={styles.username}>{userInfo.username}</Text>
           <Text style={styles.phone}>{userInfo.phone}</Text>
         </View>
-      </View>
+      </Pressable>
 
       <View style={styles.statsCard}>
         <Text style={styles.statsTitle}>学习数据</Text>
@@ -82,11 +82,20 @@ function StatItem({label, value}: {label: string; value: string}): React.JSX.Ele
   return <View style={styles.statItem}><Text style={styles.statValue}>{value}</Text><Text style={styles.statLabel}>{label}</Text></View>;
 }
 
+function ProfileAvatarView({avatar, username}: {avatar?: string | null; username: string}): React.JSX.Element {
+  const option = getProfileAvatar(avatar);
+  const localAvatarUri = getLocalAvatarUri(avatar);
+  return <View accessibilityLabel={`用户头像：${localAvatarUri ? '自定义照片' : option.label}`} style={[styles.avatar, {backgroundColor: option.backgroundColor}]}>
+    {localAvatarUri ? <Image source={{uri: localAvatarUri}} style={styles.avatarImage} /> : <Text style={[styles.avatarText, {color: option.foregroundColor}]}>{avatar ? option.mark : username.slice(0, 1).toUpperCase()}</Text>}
+  </View>;
+}
+
 const styles = StyleSheet.create({
   scrollView: {flex: 1},
   content: {flexGrow: 1, gap: spacing.lg, paddingTop: spacing.lg, paddingBottom: spacing.xl + 60},
   profileCard: {flexDirection: 'row', alignItems: 'center', gap: spacing.md, padding: spacing.lg, borderRadius: radius.lg, backgroundColor: colors.brand},
   avatar: {width: 64, height: 64, alignItems: 'center', justifyContent: 'center', borderRadius: 32, backgroundColor: colors.sun},
+  avatarImage: {width: '100%', height: '100%', borderRadius: 32},
   avatarText: {color: colors.text, fontSize: 24, fontWeight: '700'},
   userDetails: {flex: 1, gap: spacing.xs},
   username: {color: colors.surface, fontSize: 22, lineHeight: 30, fontWeight: '700'},
